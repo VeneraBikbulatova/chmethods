@@ -6,7 +6,7 @@ public class Generator {
 
     public void printMatrix(double[][] a, int n) {
         System.out.println(" ");
-        System.out.println(" a:");
+        //  System.out.println(" a:");
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
                 System.out.print(a[i][j] + " ");
@@ -406,9 +406,9 @@ public class Generator {
             }
         }
         double[] s = new double[n];
-        int count = 0;
+        int count;
         double[] w = new double[n];
-        double s_i = 0;
+        double s_i;
         double ro;
         double alpha;
         double[][] w_wt = new double[n][n];
@@ -426,6 +426,13 @@ public class Generator {
                 }
             }
 
+            /* ================================================= */
+            for (int j = 0; j < count; j++){
+                s[j] = 0.0;
+            }
+            /* ================================================= */
+
+
             //Ввели i
             for (int j = 0; j < n; j++) {
                 i[j] = 0;
@@ -442,9 +449,9 @@ public class Generator {
             }
             s_i = s[count];
 
-            ro = Math.sqrt(2 * alpha * alpha + 2 * Math.abs(alpha) * Math.abs(s_i));
+            ro = Math.sqrt(2.0 * alpha * alpha + 2.0 * Math.abs(alpha) * Math.abs(s_i));
             for (int j = 0; j < n; j++) {
-                w[j] = (1 / ro) * (s[j] - alpha * i[j]);
+                w[j] = (1.0 / ro) * (s[j] - alpha * i[j]);
             }
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < n; k++) {
@@ -455,30 +462,31 @@ public class Generator {
             for (int k = 0; k < n; k++) {
                 for (int j = 0; j < n; j++) {
                     if (k == j) {
-                        u[k][j] = 1 - 2 * w_wt[k][j];
+                        u[k][j] = 1.0 - 2.0 * w_wt[k][j];
                     } else {
-                        u[k][j] = 0 - 2 * w_wt[k][j];
+                        u[k][j] = - 2.0 * w_wt[k][j];
                     }
                 }
             }
-            printMatrix(u, 3);
-            System.out.println("u");
-            //до этого считает точно правильно!!!
-            double[][] ai = new double[n][n + 1];
-//            if (count == 0) {
-                matrixMul34(u, a_b, a_i, n, count);
-//            } else {
-//                matrixMul34(u, a_i, a_i, n, count);
-//            }
-            System.out.println("ALL MATRICES " + count);
+
+            matrixMul34(u, a_b, a_i, n, count);
+            System.out.println("a_i");
             printMatrix34(a_i, n);
-            a_b = a_i;
+
+            /* ================================================= */
+            for (int k = 0; k < n; ++k) {
+                for (int j = 0; j < n + 1; ++j) {
+                    a_b[k][j] = a_i[k][j];
+                }
+            }
+            /* ================================================= */
+
         }
     }
 
     public void printMatrix34(double[][] a, int n) {
         System.out.println(" ");
-        System.out.println(" a:");
+
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n + 1; ++j) {
                 System.out.print(a[i][j] + " ");
@@ -489,20 +497,11 @@ public class Generator {
 
 
     public void matrixMul34(double[][] a, double[][] b, double[][] c, int n, int count) {
-//        for (int i = count; i < n; i++) {
-//            for (int j = count; j < n + 1; j++) {
-//                c[i][j] = 0.0;
-//            }
-//        }
         for (int i = count; i < n; i++) {
             for (int j = count; j < n + 1; j++) {
                 c[i][j] = 0.0;
                 for (int k = 0; k < n; k++) {
-//                    if (i > 0 && j == 0) {
-//                        c[i][j] = 0.0;
-//                    } else {
-                        c[i][j] += a[i][k] * b[k][j];
-//                    }
+                    c[i][j] += a[i][k] * b[k][j];
                 }
             }
         }
