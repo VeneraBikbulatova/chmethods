@@ -411,23 +411,17 @@ public class Generator {
         double s_i;
         double ro;
         double alpha;
-        double[][] w_wt = new double[n][n];
         int[] i = new int[n];
         double[][] u = new double[n][n];
-        double[][] a_i = new double[n][n + 1];
 //        //Создали единичную матрицу
         for (count = 0; count < n; count++) {
             //Ввели s
             for (int j = 0; j < n; j++) {
-                if(count == 0){
-                    s[j] = a_b[j][count];
-                } else {
-                    s[j] = a_i[j][count];
-                }
+                s[j] = a_b[j][count];
             }
 
             /* ================================================= */
-            for (int j = 0; j < count; j++){
+            for (int j = 0; j < count; j++) {
                 s[j] = 0.0;
             }
             /* ================================================= */
@@ -444,7 +438,7 @@ public class Generator {
             }
             alpha = Math.sqrt(alpha) * (-s[count] / Math.abs(s[count]));
             //ro or beta
-            for(int j = 0; j < count; j++){
+            for (int j = 0; j < count; j++) {
                 s[j] = 0;
             }
             s_i = s[count];
@@ -453,33 +447,20 @@ public class Generator {
             for (int j = 0; j < n; j++) {
                 w[j] = (1.0 / ro) * (s[j] - alpha * i[j]);
             }
-            for (int j = 0; j < n; j++) {
-                for (int k = 0; k < n; k++) {
-                    w_wt[j][k] = w[j] * w[k];
-                }
-            }
 
             for (int k = 0; k < n; k++) {
                 for (int j = 0; j < n; j++) {
                     if (k == j) {
-                        u[k][j] = 1.0 - 2.0 * w_wt[k][j];
+                        u[k][j] = 1.0 - 2.0 * w[k] * w[j];
                     } else {
-                        u[k][j] = - 2.0 * w_wt[k][j];
+                        u[k][j] = -2.0 * w[k] * w[j];
                     }
                 }
             }
 
-            matrixMul34(u, a_b, a_i, n, count);
+            a_b = matrixMul34(u, a_b, n, count);
             System.out.println("a_i");
-            printMatrix34(a_i, n);
-
-            /* ================================================= */
-            for (int k = 0; k < n; ++k) {
-                for (int j = 0; j < n + 1; ++j) {
-                    a_b[k][j] = a_i[k][j];
-                }
-            }
-            /* ================================================= */
+            printMatrix34(a_b, n);
 
         }
     }
@@ -496,15 +477,21 @@ public class Generator {
     }
 
 
-    public void matrixMul34(double[][] a, double[][] b, double[][] c, int n, int count) {
-        for (int i = count; i < n; i++) {
-            for (int j = count; j < n + 1; j++) {
-                c[i][j] = 0.0;
-                for (int k = 0; k < n; k++) {
-                    c[i][j] += a[i][k] * b[k][j];
+    public double[][] matrixMul34(double[][] a, double[][] b, int n, int count) {
+        double[][] c = new double[n][n + 1];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n + 1; j++) {
+                if (i < count && j < count) {
+                    c[i][j] = b[i][j];
+                } else {
+                    c[i][j] = 0.0;
+                    for (int k = 0; k < n; k++) {
+                        c[i][j] += a[i][k] * b[k][j];
+                    }
                 }
             }
         }
+        return c;
     }
 
 }
