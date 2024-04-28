@@ -7,11 +7,11 @@ public class GeneratorTest {
         int N = 3;
         double ALPHA = 1.0;
         double BETA = 1000.0;
-        int n = N;
+        int n = 3;
         double[][] a = new double[N][];
 
         for(int i = 0; i < n; ++i) {
-            a[i] = new double[n];
+            a[i] = new double[n+1];
         }
 
         double[][] a_inv = new double[n][];
@@ -21,18 +21,18 @@ public class GeneratorTest {
         }
 
         Generator g = new Generator();
-        g.myGen(a, a_inv, n, ALPHA, BETA, 1, 2, 1, 1);
+        double[] values = g.myGen(a, a_inv, n, ALPHA, BETA, 1, 2, 1, 1);
         g.printMatrix(a, n);
         g.printMatrix(a_inv, n);
-        g.solve(a, new double[n], n);
+        g.solve(a, n);
+        g.printTable(values);
     }
 
     @Test
     public void test2(){
-        double[][] a = {{1, -2, 1}, {2, -1, 3}, {2, 3, -4}};
-        double[] b = {6, 11, -7};
+        double[][] a = {{1, -2, 1, 6}, {2, -1, 3, 11}, {2, 3, -4, -7}};
         Generator g = new Generator();
-        g.solve(a, b, 3);
+        g.solve(a,3);
     }
 }
 
