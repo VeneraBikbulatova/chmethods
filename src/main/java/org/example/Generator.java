@@ -29,6 +29,16 @@ public class Generator {
         return norm;
     }
 
+    public double vectorInfNorm(double[] expect, int n) {
+        double max = 0;
+        for (int k = 0; k < n; k++) {
+            if (max < Math.abs(expect[k])) {
+                max = Math.abs(expect[k]);
+            }
+        }
+        return max;
+    }
+
     public void matrixMul(double[][] a, double[][] b, double[][] c, int n) {
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
@@ -391,77 +401,101 @@ public class Generator {
         }
         s = this.matrixInfNorm(r, n);
         System.out.println(" ||R_gen|| = " + s);
-        double[][] ones = new double[n][n];
-        double[][] result = solve(returnA_B(a, n), n);
-        double max = -1;
-        for(int k = 0; k < n; k++){
-            for(int l = 0; l < n; l++) {
-                ones[k][l] = Math.abs(1.-result[k][l]);
-                if(ones[k][l] > max){
-                    max = ones[k][l];
-                }
-            }
-        }
-        double[][] a_b = new double[n][n+1];
+
+
+        double[] expect = new double[n];
         for (int k = 0; k < n; k++) {
-            for (int l = 0; l < n + 1; l++) {
-                if (l == n) {
-                    a_b[k][l] = 1;
-                } else {
-                    a_b[k][l] = a[k][l];
-                }
+            expect[k] = 1;
+        }
+//        double[] result = solve(returnA_B(a, expect, n), n);
+        double[] result = gaussZeidel(returnA_B(a, expect, n), n);
+        double max = -1;
+        double max_e = -1;
+        for (int k = 0; k < n; k++) {
+            if (max < Math.abs(expect[k] - result[k])) {
+                max = Math.abs(expect[k] - result[k]);
+            }
+            if (max_e < Math.abs(expect[k])) {
+                max_e = Math.abs(expect[k]);
             }
         }
+
         double[] values = new double[9];
         values[0] = alpha;
         values[1] = beta;
         values[2] = matrixInfNorm(a, n);
         values[3] = matrixInfNorm(a_inv, n);
-        values[4] = matrixInfNorm(a, n)*matrixInfNorm(a_inv, n);
-//        values[5] = matrixInfNorm(ones, n);
+        values[4] = matrixInfNorm(a, n) * matrixInfNorm(a_inv, n);
         values[5] = max;
-        values[6] = (max/matrixInfNorm(result, n));
-        double r_table = matrixInfNorm(solve(a_b, n), n);
-        values[7] = r_table;
-        for(int k = 0; k < n; k++){
-            for(int l = 0; l < n; l++) {
-                ones[k][l] = 0;
-                if(k == l){
-                    ones[k][l] = 1;
-                }
+        values[6] = (max / max_e);
+        double[] r_table = new double[n];
+        double mul = 0;
+        double[] b = new double[n];
+        double sum;
+        for (int k = 0; k < n; k++) {
+            sum = 0;
+            for (int l = 0; l < n; l++) {
+                sum += a[k][l] * expect[l];
             }
+            b[k] = sum;
         }
-        values[8] = r_table/matrixInfNorm(ones, n);
+        for (int k = 0; k < n; k++) {
+            mul = 0;
+            for (int l = 0; l < n; l++) {
+                mul += a[k][l] * result[l];
+            }
+            r_table[k] = mul - b[k];
+        }
+        values[7] = vectorInfNorm(r_table, n);
+        values[8] = vectorInfNorm(r_table, n) / vectorInfNorm(b, n);
         return values;
     }
 
-    public double[][] returnA_B(double[][] a, int n){
-        double[][] a_b = new double[n][n+1];
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n+1; j++){
-                if(j < n) {
-                    a_b[i][j] = a[i][j];
-                } else {
-                    a_b[i][j] = a[i][i];
-                }
+    public double[][] returnA_B(double[][] a, double[] res, int n) {
+        double[][] a_b = new double[n][n + 1];
+        double sum;
+        for (int i = 0; i < n; i++) {
+            sum = 0;
+            for (int j = 0; j < n; j++) {
+                sum += a[i][j] * res[j];
+                a_b[i][j] = a[i][j];
             }
+            a_b[i][n] = sum;
         }
         return a_b;
     }
 
+    //2 лаба - метод гаусса-зейделя
+    public double[] gaussZeidel(double[][] a_b, int n) {
+        double[] solved = new double[n];
+        double[] current = new double[n];
+        double[] difference = new double[n];
+        double min;
+        for (int i = 0; i < n; i++) {
+            solved[i] = 1.;
+        }
+
+        do {
+            min = 100;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    current[i] += a_b[i][j] * solved[j];
+                }
+                current[i] = solved[i] / a_b[i][0];
+                difference[i] = Math.abs(current[i]-solved[i]);
+                solved[i] = current[i];
+                if(solved[i] < min){
+                    min = solved[i];
+                }
+            }
+        } while (min > 1.);
+
+        return solved;
+    }
+
     //Метод отражений
-//    public double[][] solve(double[][] a, double[] b, int n) {
-    public double[][] solve(double[][] a_b, int n){
-//        double[][] a_b = new double[n][n + 1];
-//        for (int k = 0; k < n; k++) {
-//            for (int j = 0; j < n + 1; j++) {
-//                if (j == n) {
-//                    a_b[k][j] = b[k];
-//                } else {
-//                    a_b[k][j] = a[k][j];
-//                }
-//            }
-//        }
+    public double[] solve(double[][] a_b, int n) {
+        double[] solved = new double[n];
         double[] s = new double[n];
         int count;
         double[] w = new double[n];
@@ -516,12 +550,17 @@ public class Generator {
             }
 
             a_b = matrixMul34(u, a_b, n, count);
-//            System.out.println("a_i");
-//            printMatrix34(a_b, n);
 
         }
-        printMatrix34(a_b, n);
-        return a_b;
+        double sum;
+        for (int j = n - 1; j >= 0; j--) {
+            sum = 0;
+            for (int k = j + 1; k < n; k++) {
+                sum += a_b[j][k] * solved[k];
+            }
+            solved[j] = (a_b[j][n] - sum) / a_b[j][j];
+        }
+        return solved;
     }
 
     public void printMatrix34(double[][] a, int n) {
@@ -535,10 +574,10 @@ public class Generator {
         }
     }
 
-    public void printTable(double[] values){
-        System.out.println("| alpha ||   beta   ||        nrmA         ||        nrmA_        ||         nu          ||          z           ||         ksi          ||          r           ||         ro         |");
+    public void printTable(double[] values) {
+        System.out.println("| alpha ||   beta   ||        nrmA         ||        nrmA_        ||         nu          ||          z          ||         ksi          ||          r           ||         ro         |");
         System.out.println("|  " + values[0] + "  ||  " + values[1] + "  ||  " + values[2] + "  ||  " + values[3] + "  ||  " + values[4] + "  ||  " + values[5]
-                + "  ||  " + values[6] + "  ||  " + values[7] + "  ||  " + values[8] +"|");
+                + "  ||  " + values[6] + "  ||  " + values[7] + "  ||  " + values[8] + "|");
     }
 
     public double[][] matrixMul34(double[][] a, double[][] b, int n, int count) {

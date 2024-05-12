@@ -5,13 +5,13 @@ public class GeneratorTest {
     @Test
     public void Test1() {
         int N = 3;
-        double ALPHA = 1.0;
-        double BETA = 1000.0;
-        int n = 3;
+        double ALPHA = 1;
+        double BETA = 1000;
+        int n = N;
         double[][] a = new double[N][];
 
         for(int i = 0; i < n; ++i) {
-            a[i] = new double[n+1];
+            a[i] = new double[n];
         }
 
         double[][] a_inv = new double[n][];
@@ -22,11 +22,12 @@ public class GeneratorTest {
 
         Generator g = new Generator();
         double[] values = g.myGen(a, a_inv, n, ALPHA, BETA, 1, 2, 1, 1);
+
         g.printMatrix(a, n);
         g.printMatrix(a_inv, n);
-        g.solve(a, n);
         g.printTable(values);
     }
+
 
     @Test
     public void test2(){
